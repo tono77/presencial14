@@ -19,7 +19,6 @@
 # 11. El menú debe repetirse hasta que el usuario ingrese la opción 10 (salir).
 
 opt = 0
-persona = {Nombre: nil, Edad: nil, Comuna: nil, Genero: nil}
 personas =[]
 
 
@@ -39,19 +38,54 @@ def show_menu
   puts "===============================================\n\n"
 end
 
-def add_persona(nam, age, loc, gen, hash, tbl_per)
-  hash = {Nombre: nam, Edad: age.to_i, Comuna: loc, Genero: gen}
-  tbl_per.push(hash)
+def capitalize_words(str)
+  str.split.map(&:capitalize).join(' ')
 end
 
-def upd_persona(nam, age, loc, gen, hash, tbl_per)
-
+def add_persona(nam, age, loc, gen, tbl_per)
+  tbl_per.push({Nombre: capitalize_words(nam).to_s, Edad: age.to_i, Comuna: capitalize_words(loc), Genero: capitalize_words(gen)})
 end
 
-# add_persona('Edgardo Ochoa', 40, 'Colina', 'Masculino', persona, personas)
-# add_persona('Felipe Quinteros', 33, 'Santiago', 'Masculino', persona, personas)
-# add_persona('Sandra Salgado', 35, 'Providencia', 'Femenino', persona, personas)
-# p personas
+def upd_persona(nam, age, loc, gen, tbl_per)
+  del_persona(nam, tbl_per)
+  add_persona(nam, age, loc, gen, tbl_per)
+end
+
+def del_persona(nam, tbl_per)
+  tbl_per.delete_if {|h| h[:Nombre] == capitalize_words(nam) } != nil
+end
+
+def bus_persona(nam, tbl_per)
+  found = tbl_per.detect {|h| h[:Nombre] == capitalize_words(nam)}
+  p found
+end
+
+def count_personas(tbl_per)
+  tbl_per.length
+end
+
+def comunas(tbl_per)
+  (tbl_per.group_by {|h| h[:Comuna]}).keys
+end
+
+def personas_x_rango(tbl_per, min, max)
+  tbl_per.select {|h| h[:Edad] >= min && h[:Edad] <= max}
+end
+
+def suma_edades(tbl_per)
+  suma = 0
+  tbl_per.map {|h| suma += h[:Edad]}
+  return suma
+end
+
+def group_genero(tbl_per)
+  tbl_per.group_by {|h| h[:Genero]}
+end
+
+ add_persona('Edgardo Ochoa', 40, 'Colina', 'Masculino', personas)
+ add_persona('Felipe Quinteros', 25, 'Santiago', 'Masculino', personas)
+ add_persona('Sandra Salgado', 20, 'Providencia', 'Femenino', personas)
+
 
 until opt == 10
   show_menu()
@@ -67,8 +101,13 @@ until opt == 10
       loc = gets.chomp
       puts 'Ingresa Género'
       gen = gets.chomp
-      add_persona(nam, age, loc, gen, persona, personas)
+      add_persona(nam, age, loc, gen, personas)
     when 2
+      puts 'Ingresa Nombre'
+      nam = gets.chomp
+      fnd_per = bus_persona(nam, personas)
+      puts "Encontramos a #{fnd_per}: Actualizar"  if  fnd_per != nil
+      puts 'No encontramos ese registro: Ingresar nuevo' if  fnd_per == nil
       puts 'Ingresa Nombre'
       nam = gets.chomp
       puts 'Ingresa Edad'
@@ -77,21 +116,26 @@ until opt == 10
       loc = gets.chomp
       puts 'Ingresa Género'
       gen = gets.chomp
-      upd_persona(nam, age, loc, gen, persona, personas)
+      upd_persona(nam, age, loc, gen, personas)
     when 3
-
+      puts 'Ingresa Nombre'
+      nam = gets.chomp
+      if del_persona(nam, personas) != nil
+        p 'Eliminado exitosamente'
+      else
+        p 'No fue encontrado'
+      end
     when 4
-
+      puts "La cantidad de personas en el registro es #{count_personas(personas)}"
     when 5
-
+      puts "Las comunas de las personas: #{comunas(personas)}"
     when 6
-
+      puts "Las personas entre 20 y 25 años: #{personas_x_rango(personas, 20, 25)}"
     when 7
-
+      puts "La suma de las edades de las personas: #{suma_edades(personas)}"
     when 8
-
+      puts "El promedio de edad de las personas: #{suma_edades(personas)/personas.length}"
     when 9
-
+      puts "Personas x Genero: #{group_genero(personas)}"
     end
-p personas
 end
